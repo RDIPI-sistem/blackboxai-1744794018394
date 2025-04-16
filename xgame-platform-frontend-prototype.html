@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>XGame Platform Prototype</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="flex justify-between items-center p-4 bg-gray-800">
+    <h1 class="text-3xl font-bold">XGame Platform</h1>
+    <div class="flex items-center space-x-4">
+      <select id="languageSwitcher" class="bg-gray-700 text-white rounded px-2 py-1">
+        <option value="en">English</option>
+        <option value="ru">Русский</option>
+      </select>
+      <button id="loginBtn" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Login / Register</button>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main class="flex-grow container mx-auto p-4">
+    <div id="appList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <!-- Apps/games will be rendered here -->
+    </div>
+  </main>
+
+  <!-- Fullscreen popup for app/game details -->
+  <div id="appDetailsPopup" class="fixed inset-0 bg-black bg-opacity-95 hidden flex flex-col p-6 overflow-auto z-50">
+    <button id="closePopupBtn" class="self-end text-white text-4xl font-bold mb-4" aria-label="Close">&times;</button>
+    <h2 id="appTitle" class="text-4xl font-bold mb-4"></h2>
+    <p id="appDescription" class="mb-6 max-w-4xl"></p>
+    <div id="screenshots" class="flex space-x-4 overflow-x-auto max-w-5xl mb-6"></div>
+    <div class="flex items-center space-x-4">
+      <div class="flex items-center text-yellow-400 text-3xl">
+        <i class="fas fa-star mr-2"></i>
+        <span id="averageRating">0</span>
+      </div>
+      <div>
+        <label for="userRating" class="mr-2">Your Rating:</label>
+        <select id="userRating" class="bg-gray-700 text-white rounded px-2 py-1">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+        </select>
+        <button id="submitRatingBtn" class="ml-2 bg-green-600 hover:bg-green-700 px-3 py-1 rounded">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login/Register modal -->
+  <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-90 hidden flex flex-col items-center justify-center p-6 z-60">
+    <div class="bg-gray-800 rounded-lg p-8 max-w-md w-full">
+      <h2 class="text-3xl font-bold mb-6 text-center">Login / Register</h2>
+      <button class="w-full mb-4 bg-red-600 hover:bg-red-700 py-2 rounded flex items-center justify-center space-x-2">
+        <i class="fab fa-google"></i><span>Continue with Google</span>
+      </button>
+      <button class="w-full mb-4 bg-blue-600 hover:bg-blue-700 py-2 rounded flex items-center justify-center space-x-2">
+        <i class="fab fa-facebook"></i><span>Continue with Facebook</span>
+      </button>
+      <button id="closeLoginModalBtn" class="w-full bg-gray-600 hover:bg-gray-700 py-2 rounded mt-4">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const translations = {
+      en: {
+        title: "XGame Platform",
+        loginRegister: "Login / Register",
+        yourRating: "Your Rating:",
+        submit: "Submit",
+        close: "Close",
+        continueWithGoogle: "Continue with Google",
+        continueWithFacebook: "Continue with Facebook"
+      },
+      ru: {
+        title: "Платформа XGame",
+        loginRegister: "Вход / Регистрация",
+        yourRating: "Ваша оценка:",
+        submit: "Отправить",
+        close: "Закрыть",
+        continueWithGoogle: "Продолжить с Google",
+        continueWithFacebook: "Продолжить с Facebook"
+      }
+    };
+
+    let currentLang = 'en';
+
+    const apps = [
+      {
+        id: 1,
+        name: { en: "Sample Game", ru: "Пример игры" },
+        description: {
+          en: "An exciting sample game.",
+          ru: "Увлекательная примерная игра."
+        },
+        screenshots: [
+          "https://via.placeholder.com/600x400?text=Screenshot+1",
+          "https://via.placeholder.com/600x400?text=Screenshot+2"
+        ],
+        ratings: [5, 4, 4, 5]
+      },
+      {
+        id: 2,
+        name: { en: "Sample App", ru: "Пример приложения" },
+        description: {
+          en: "A useful sample app.",
+          ru: "Полезное примерное приложение."
+        },
+        screenshots: [
+          "https://via.placeholder.com/600x400?text=Screenshot+1"
+        ],
+        ratings: [3, 4, 2]
+      }
+    ];
+
+    const appListEl = document.getElementById('appList');
+    const appDetailsPopup = document.getElementById('appDetailsPopup');
+    const appTitleEl = document.getElementById('appTitle');
+    const appDescriptionEl = document.getElementById('appDescription');
+    const screenshotsEl = document.getElementById('screenshots');
+    const averageRatingEl = document.getElementById('averageRating');
+    const userRatingEl = document.getElementById('userRating');
+    const submitRatingBtn = document.getElementById('submitRatingBtn');
+    const closePopupBtn = document.getElementById('closePopupBtn');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginModal = document.getElementById('loginModal');
+    const closeLoginModalBtn = document.getElementById('closeLoginModalBtn');
+    const languageSwitcher = document.getElementById('languageSwitcher');
+
+    let selectedApp = null;
+
+    function calculateAverageRating(ratings) {
+      if (ratings.length === 0) return 0;
+      const sum = ratings.reduce((a, b) => a + b, 0);
+      return (sum / ratings.length).toFixed(1);
+    }
+
+    function renderAppList() {
+      appListEl.innerHTML = '';
+      apps.forEach(app => {
+        const card = document.createElement('div');
+        card.className = 'bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-700 transition';
+        card.tabIndex = 0;
+        card.setAttribute('role', 'button');
+        card.setAttribute('aria-pressed', 'false');
+        card.addEventListener('click', () => openAppDetails(app));
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            openAppDetails(app);
+          }
+        });
+
+        const title = document.createElement('h2');
+        title.className = 'text-xl font-semibold mb-2';
+        title.textContent = app.name[currentLang];
+
+        const desc = document.createElement('p');
+        desc.className = 'text-gray-300';
+        desc.textContent = app.description[currentLang];
+
+        const ratingDiv = document.createElement('div');
+        ratingDiv.className = 'mt-2 flex items-center';
+
+        const starIcon = document.createElement('i');
+        starIcon.className = 'fas fa-star text-yellow-400 mr-1';
+
+        const ratingText = document.createElement('span');
+        ratingText.textContent = calculateAverageRating(app.ratings);
+
+        ratingDiv.appendChild(starIcon);
+        ratingDiv.appendChild(ratingText);
+
+        card.appendChild(title);
+        card.appendChild(desc);
+        card.appendChild(ratingDiv);
+
+        appListEl.appendChild(card);
+      });
+    }
+
+    function openAppDetails(app) {
+      selectedApp = app;
+      appTitleEl.textContent = app.name[currentLang];
+      appDescriptionEl.textContent = app.description[currentLang];
+      averageRatingEl.textContent = calculateAverageRating(app.ratings);
+      userRatingEl.value = 0;
+
+      screenshotsEl.innerHTML = '';
+      app.screenshots.forEach(src => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = 'Screenshot';
+        img.className = 'rounded-lg max-h-64 mr-4';
+        screenshotsEl.appendChild(img);
+      });
+
+      appDetailsPopup.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeAppDetails() {
+      appDetailsPopup.classList.add('hidden');
+      document.body.style.overflow = 'auto';
+      selectedApp = null;
+    }
+
+    function submitRating() {
+      const rating = parseInt(userRatingEl.value);
+      if (rating < 1 || rating > 5) {
+        alert('Please select a rating between 1 and 5.');
+        return;
+      }
+      if (selectedApp) {
+        selectedApp.ratings.push(rating);
+        averageRatingEl.textContent = calculateAverageRating(selectedApp.ratings);
+        renderAppList();
+        alert('Thank you for your rating!');
+      }
+    }
+
+    function openLoginModal() {
+      loginModal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLoginModal() {
+      loginModal.classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }
+
+    function switchLanguage() {
+      currentLang = languageSwitcher.value;
+      document.querySelector('h1').textContent = translations[currentLang].title;
+      loginBtn.textContent = translations[currentLang].loginRegister;
+      document.querySelector('label[for="userRating"]').textContent = translations[currentLang].yourRating;
+      submitRatingBtn.textContent = translations[currentLang].submit;
+      document.querySelector('#loginModal button:nth-child(1) span').textContent = translations[currentLang].continueWithGoogle;
+      document.querySelector('#loginModal button:nth-child(2) span').textContent = translations[currentLang].continueWithFacebook;
+      document.querySelector('#closeLoginModalBtn').textContent = translations[currentLang].close;
+      closePopupBtn.setAttribute('aria-label', translations[currentLang].close);
+      renderAppList();
+      if (selectedApp) {
+        openAppDetails(selectedApp);
+      }
+    }
+
+    closePopupBtn.addEventListener('click', closeAppDetails);
+    submitRatingBtn.addEventListener('click', submitRating);
+    loginBtn.addEventListener('click', openLoginModal);
+    closeLoginModalBtn.addEventListener('click', closeLoginModal);
+    languageSwitcher.addEventListener('change', switchLanguage);
+
+    // Initial render
+    renderAppList();
+  </script>
+</body>
+</html>
