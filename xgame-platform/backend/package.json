@@ -1,7 +1,7 @@
 {
   "name": "xgame-backend",
   "version": "1.0.0",
-  "description": "Backend for XGame platform",
+  "description": "Backend for XGame platform with social login",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -16,9 +16,7 @@
     "passport-facebook": "^3.0.0",
     "express-session": "^1.17.3",
     "mongoose": "^7.0.3",
-    "dotenv": "^16.0.3",
-    "i18next": "^22.4.9",
-    "i18next-express-middleware": "^1.9.1"
+    "dotenv": "^16.0.3"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
